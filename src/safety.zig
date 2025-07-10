@@ -91,7 +91,7 @@ pub fn markForLeakDetection(address: usize, ptr: anytype) !void {
 }
 
 pub fn reference(address: usize, ptr: anytype) void {
-    var entry = leaks.getPtr(@intFromPtr(ptr));
+    const entry = leaks.getPtr(@intFromPtr(ptr));
     if (entry) |e| {
         e.*.count += 1;
         return;
@@ -100,7 +100,7 @@ pub fn reference(address: usize, ptr: anytype) void {
 }
 
 pub fn destroy(ptr: *anyopaque) void {
-    var entry = leaks.getPtr(@intFromPtr(ptr)) orelse std.debug.panic("Double free!", .{});
+    const entry = leaks.getPtr(@intFromPtr(ptr)) orelse std.debug.panic("Double free!", .{});
     entry.*.count -= 1;
     if (entry.count == 0) {
         _ = leaks.swapRemove(@intFromPtr(ptr));
@@ -133,7 +133,8 @@ pub export fn detectLeaks() void {
         writer.print("[giza] (err): Leak detected! {s}@{x} leaked:\n", .{ li.type_name, @intFromPtr(li.ptr) }) catch |err| {
             writer.print("Unable to print stack trace: {s}\n", .{@errorName(err)}) catch return;
         };
-        std.debug.writeStackTrace(li.st, writer, arena.?.allocator(), debug_info, tty_config.?) catch |err| {
+        ////std.debug.writeStackTrace(li.st, writer, arena.?.allocator(), debug_info, tty_config.?) catch |err| {
+        std.debug.writeStackTrace(li.st, writer, debug_info, tty_config.?) catch |err| {
             writer.print("Unable to print stack trace: {s}\n", .{@errorName(err)}) catch return;
         };
         writer.print("\n", .{}) catch unreachable;
